@@ -45,6 +45,45 @@ quantum-crypto-veille/
 
 ## Installation
 
+### Méthode automatisée (recommandée)
+
+1. Cloner le dépôt :
+```bash
+git clone https://github.com/your-username/quantum-crypto-veille.git
+cd quantum-crypto-veille
+```
+
+2. Exécuter le script de configuration :
+
+**Sur Windows :**
+```bash
+setup.bat
+```
+
+**Sur Linux/Mac :**
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+Ce script crée automatiquement un environnement virtuel, installe toutes les dépendances, télécharge les modèles nécessaires et prépare le fichier `.env`.
+
+3. Activer l'environnement virtuel si ce n'est pas déjà fait :
+
+**Sur Windows :**
+```bash
+venv\Scripts\activate
+```
+
+**Sur Linux/Mac :**
+```bash
+source venv/bin/activate
+```
+
+4. Modifier le fichier `.env` avec vos clés API.
+
+### Méthode manuelle
+
 1. Cloner le dépôt :
 ```bash
 git clone https://github.com/your-username/quantum-crypto-veille.git
@@ -80,6 +119,24 @@ cp .env.template .env
 2. Obtenir le token du bot et l'ajouter dans le fichier `.env`
 
 ## Utilisation
+
+### Exécuter le script de test (recommandé pour débuter)
+
+Ce script vous permet de tester facilement les différents composants du système :
+
+```bash
+# Tester tous les composants
+python run_tests.py
+
+# Tester un composant spécifique
+python run_tests.py --component collector  # Teste uniquement le collecteur de données
+python run_tests.py --component analyzer   # Teste uniquement l'analyseur
+python run_tests.py --component podcast    # Teste uniquement la génération de podcast
+python run_tests.py --component telegram   # Teste uniquement la configuration du bot Telegram
+
+# Mode verbeux pour plus de détails
+python run_tests.py --verbose
+```
 
 ### Exécuter le système complet (avec planification) :
 
