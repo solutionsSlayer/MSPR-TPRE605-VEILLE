@@ -283,18 +283,38 @@ class QuantumCryptoAnalyzer:
         latest_date = self.data['date'].max()
         today = datetime.now().strftime('%Y-%m-%d')
         
+        # Convertir les DataFrames en dictionnaires en s'assurant que les dates sont converties en chaînes
+        latest_research = self.data[self.data['type'] == 'research'].sort_values('date', ascending=False).head(5).copy()
+        latest_news = self.data[self.data['type'] == 'news'].sort_values('date', ascending=False).head(5).copy()
+        
+        # Convertir les colonnes de dates en chaînes
+        latest_research['date'] = latest_research['date'].dt.strftime('%Y-%m-%d')
+        latest_news['date'] = latest_news['date'].dt.strftime('%Y-%m-%d')
+        
         daily_digest = {
             'date': today,
             'total_items': len(self.data),
             'recent_items': len(self.recent_data),
             'top_sources': self.data['source'].value_counts().head(5).to_dict(),
-            'latest_research': self.data[self.data['type'] == 'research'].sort_values('date', ascending=False).head(5)[['title', 'source', 'url', 'date']].to_dict('records'),
-            'latest_news': self.data[self.data['type'] == 'news'].sort_values('date', ascending=False).head(5)[['title', 'source', 'url', 'date']].to_dict('records')
+            'latest_research': latest_research[['title', 'source', 'url', 'date']].to_dict('records'),
+            'latest_news': latest_news[['title', 'source', 'url', 'date']].to_dict('records')
         }
         
         # Sauvegarder le digest
         with open(os.path.join(self.results_folder, f"daily_digest_{today}.json"), 'w') as f:
-            json.dump(daily_digest, f, indent=2)
+            try:
+                json.dump(daily_digest, f, indent=2)
+            except TypeError as e:
+                print(f"Erreur de sérialisation JSON: {e}")
+                # Réessayer avec une méthode plus sûre qui convertit les types problématiques
+                import json as jsonlib
+                class CustomJSONEncoder(jsonlib.JSONEncoder):
+                    def default(self, obj):
+                        if isinstance(obj, pd.Timestamp):
+                            return obj.strftime('%Y-%m-%d')
+                        return super().default(obj)
+                
+                jsonlib.dump(daily_digest, f, indent=2, cls=CustomJSONEncoder)
             
         return daily_digest
 

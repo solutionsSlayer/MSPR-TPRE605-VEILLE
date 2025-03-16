@@ -1,0 +1,51 @@
+# Environnement Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Données et résultats
+data/*.csv
+data/*.json
+analysis_results/*.json
+analysis_results/*.png
+analysis_results/*.txt
+podcasts/*.mp3
+podcasts/*.txt
+
+# Logs
+logs/
+*.log
+quantum_veille.log
+
+# Variables d'environnement
+.env
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Fichiers spécifiques à l'IDE
+.idea/
+.vscode/
+*.swp
+*.swo
