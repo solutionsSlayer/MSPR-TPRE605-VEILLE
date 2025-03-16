@@ -84,15 +84,15 @@ def test_collector(verbose=False):
         
         duration = time.time() - start_time
         
-        print(f"✅ Collecte terminée en {duration:.2f} secondes")
-        print(f"✅ Données sauvegardées dans:")
+        print(f"[OK] Collecte terminée en {duration:.2f} secondes")
+        print(f"[OK] Données sauvegardées dans:")
         print(f"   - {csv_path}")
         print(f"   - {json_path}")
         
         # Afficher un échantillon des données si verbose
         if verbose and os.path.exists(json_path):
             import json
-            with open(json_path, 'r') as f:
+            with open(json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             print(f"\nAperçu des données collectées ({len(data)} éléments au total):")
@@ -109,7 +109,7 @@ def test_collector(verbose=False):
         return json_path
     
     except Exception as e:
-        print(f"❌ ERREUR lors du test du collecteur: {str(e)}")
+        print(f"[ERREUR] lors du test du collecteur: {str(e)}")
         return None
 
 def test_analyzer(verbose=False):
@@ -120,7 +120,7 @@ def test_analyzer(verbose=False):
     data_files = [f for f in os.listdir("data") if f.endswith('.json')]
     
     if not data_files:
-        print("❌ Aucun fichier de données trouvé dans le dossier 'data/'")
+        print("[ERREUR] Aucun fichier de données trouvé dans le dossier 'data/'")
         print("   Veuillez d'abord exécuter le collecteur de données")
         return None
     
@@ -138,8 +138,8 @@ def test_analyzer(verbose=False):
         
         duration = time.time() - start_time
         
-        print(f"✅ Analyse terminée en {duration:.2f} secondes")
-        print(f"✅ Résultats sauvegardés dans le dossier 'analysis_results/'")
+        print(f"[OK] Analyse terminée en {duration:.2f} secondes")
+        print(f"[OK] Résultats sauvegardés dans le dossier 'analysis_results/'")
         
         # Afficher un aperçu des résultats si verbose
         if verbose:
@@ -169,7 +169,7 @@ def test_analyzer(verbose=False):
         return results
     
     except Exception as e:
-        print(f"❌ ERREUR lors du test de l'analyseur: {str(e)}")
+        print(f"[ERREUR] lors du test de l'analyseur: {str(e)}")
         return None
 
 def test_podcast(verbose=False):
@@ -181,7 +181,7 @@ def test_podcast(verbose=False):
     digest_files = [f for f in os.listdir("analysis_results") if f.startswith('daily_digest')]
     
     if not summary_files or not digest_files:
-        print("❌ Fichiers d'analyse nécessaires non trouvés dans 'analysis_results/'")
+        print("[ERREUR] Fichiers d'analyse nécessaires non trouvés dans 'analysis_results/'")
         print("   Veuillez d'abord exécuter l'analyseur de données")
         return None
     
@@ -197,14 +197,14 @@ def test_podcast(verbose=False):
         duration = time.time() - start_time
         
         if result["status"] == "success":
-            print(f"✅ Génération du podcast terminée en {duration:.2f} secondes")
-            print(f"✅ Script du podcast: {result['script_path']}")
-            print(f"✅ Fichier audio: {result['podcast_path']}")
-            print(f"✅ URL du podcast: {result['podcast_url']}")
+            print(f"[OK] Génération du podcast terminée en {duration:.2f} secondes")
+            print(f"[OK] Script du podcast: {result['script_path']}")
+            print(f"[OK] Fichier audio: {result['podcast_path']}")
+            print(f"[OK] URL du podcast: {result['podcast_url']}")
             
             # Afficher un aperçu du script si verbose
             if verbose and os.path.exists(result['script_path']):
-                with open(result['script_path'], 'r') as f:
+                with open(result['script_path'], 'r', encoding='utf-8') as f:
                     script = f.read()
                 
                 print("\nAperçu du script du podcast:")
@@ -215,12 +215,12 @@ def test_podcast(verbose=False):
                     print("  ...")
                 
         else:
-            print(f"❌ Erreur lors de la génération du podcast: {result['error']}")
+            print(f"[ERREUR] lors de la génération du podcast: {result['error']}")
         
         return result
     
     except Exception as e:
-        print(f"❌ ERREUR lors du test du générateur de podcast: {str(e)}")
+        print(f"[ERREUR] lors du test du générateur de podcast: {str(e)}")
         return None
 
 def test_telegram(verbose=False):
@@ -233,15 +233,15 @@ def test_telegram(verbose=False):
         
         token = os.getenv("TELEGRAM_BOT_TOKEN")
         if not token:
-            print("❌ TELEGRAM_BOT_TOKEN non défini dans le fichier .env")
+            print("[ERREUR] TELEGRAM_BOT_TOKEN non défini dans le fichier .env")
             print("   Veuillez ajouter votre token Telegram dans le fichier .env")
             return False
         
         # Test minimal pour vérifier que les imports et la configuration fonctionnent
         from distributors.telegram_bot import QuantumCryptoBot
         
-        print("✅ Configuration du bot Telegram valide")
-        print("ℹ️ Pour démarrer le bot, exécutez:")
+        print("[OK] Configuration du bot Telegram valide")
+        print("[INFO] Pour démarrer le bot, exécutez:")
         print("   python main.py --run-once --tasks telegram")
         
         # Ne pas démarrer le bot ici car il bloquerait l'exécution du reste des tests
@@ -249,7 +249,7 @@ def test_telegram(verbose=False):
         return True
     
     except Exception as e:
-        print(f"❌ ERREUR lors du test du bot Telegram: {str(e)}")
+        print(f"[ERREUR] lors du test du bot Telegram: {str(e)}")
         return False
 
 if __name__ == "__main__":
