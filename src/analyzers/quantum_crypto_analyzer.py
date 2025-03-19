@@ -39,7 +39,21 @@ class QuantumCryptoAnalyzer:
         """
         self.data_path = data_path
         self.results_folder = "analysis_results"
-        os.makedirs(self.results_folder, exist_ok=True)
+        
+        # Créer les sous-dossiers pour une meilleure organisation
+        self.clusters_folder = os.path.join(self.results_folder, "clusters")
+        self.visualizations_folder = os.path.join(self.results_folder, "visualizations")
+        self.entities_folder = os.path.join(self.results_folder, "entities")
+        self.reports_folder = os.path.join(self.results_folder, "reports")
+        self.daily_folder = os.path.join(self.results_folder, "daily")
+        self.weekly_folder = os.path.join(self.results_folder, "weekly")
+        self.monthly_folder = os.path.join(self.results_folder, "monthly")
+        
+        # Créer les répertoires s'ils n'existent pas
+        for folder in [self.results_folder, self.clusters_folder, self.visualizations_folder, 
+                      self.entities_folder, self.reports_folder, self.daily_folder, 
+                      self.weekly_folder, self.monthly_folder]:
+            os.makedirs(folder, exist_ok=True)
         
         # Définir un modèle OpenAI moins cher par défaut si aucun n'est spécifié
         self.openai_model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
@@ -204,7 +218,7 @@ class QuantumCryptoAnalyzer:
             
             # Sauvegarder les résultats
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_path = os.path.join(self.results_folder, f"clusters_{timestamp}.json")
+            output_path = os.path.join(self.clusters_folder, f"clusters_{timestamp}.json")
             with open(output_path, 'w', encoding='utf-8') as f:
                 json.dump(cluster_results, f, ensure_ascii=False, indent=2, default=str)
             
@@ -231,7 +245,7 @@ class QuantumCryptoAnalyzer:
             
             # Sauvegarder l'image
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_path = os.path.join(self.results_folder, f"wordcloud_{timestamp}.png")
+            output_path = os.path.join(self.visualizations_folder, f"wordcloud_{timestamp}.png")
             
             plt.figure(figsize=(10, 5))
             plt.imshow(wordcloud, interpolation='bilinear')
@@ -293,7 +307,7 @@ class QuantumCryptoAnalyzer:
             
             # Sauvegarder les résultats
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_path = os.path.join(self.results_folder, f"entities_{timestamp}.json")
+            output_path = os.path.join(self.entities_folder, f"entities_{timestamp}.json")
             
             with open(output_path, 'w', encoding='utf-8') as f:
                 json.dump(entity_counts, f, ensure_ascii=False, indent=2)
@@ -332,7 +346,7 @@ class QuantumCryptoAnalyzer:
             
             # Sauvegarder le graphique
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_path = os.path.join(self.results_folder, f"trends_{timestamp}.png")
+            output_path = os.path.join(self.visualizations_folder, f"trends_{timestamp}.png")
             plt.savefig(output_path, dpi=300)
             plt.close()
             
@@ -341,7 +355,7 @@ class QuantumCryptoAnalyzer:
                 'monthly_counts': {str(k): int(v) for k, v in monthly_counts.items()}
             }
             
-            json_path = os.path.join(self.results_folder, f"trends_data_{timestamp}.json")
+            json_path = os.path.join(self.visualizations_folder, f"trends_data_{timestamp}.json")
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(trend_data, f, ensure_ascii=False, indent=2)
             
@@ -366,14 +380,25 @@ class QuantumCryptoAnalyzer:
             sample_size = min(20, len(self.data))
             sample_data = self.data.sample(sample_size)
             
-            # Créer un résumé des données
-            data_summary = "\n".join([
-                f"Titre: {row['title']}",
-                f"Résumé: {row['summary']}",
-                f"Date: {row['date']}",
-                f"Source: {row['source']}",
-                "---"
-            ] for _, row in sample_data.iterrows())
+            # Création d'un résumé des données avec gestion des erreurs
+            data_lines = []
+            for _, row in sample_data.iterrows():
+                try:
+                    title = str(row['title']) if not pd.isna(row['title']) else "Sans titre"
+                    summary = str(row['summary']) if not pd.isna(row['summary']) else "Sans résumé"
+                    date = str(row['date']) if not pd.isna(row['date']) else "Date inconnue"
+                    source = str(row['source']) if not pd.isna(row['source']) else "Source inconnue"
+                    
+                    data_lines.append(f"Titre: {title}")
+                    data_lines.append(f"Résumé: {summary}")
+                    data_lines.append(f"Date: {date}")
+                    data_lines.append(f"Source: {source}")
+                    data_lines.append("---")
+                except Exception as row_error:
+                    print(f"Erreur lors du traitement d'une ligne: {row_error}")
+                    continue
+            
+            data_summary = "\n".join(data_lines)
             
             # Définir le prompt par défaut si non spécifié
             if prompt_template is None:
@@ -410,7 +435,7 @@ class QuantumCryptoAnalyzer:
             
             # Sauvegarder les insights
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_path = os.path.join(self.results_folder, f"ai_insights_{timestamp}.txt")
+            output_path = os.path.join(self.reports_folder, f"ai_insights_{timestamp}.txt")
             
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(insights)
@@ -451,7 +476,7 @@ class QuantumCryptoAnalyzer:
         
         # Générer un rapport de synthèse
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_path = os.path.join(self.results_folder, f"rapport_complet_{timestamp}.txt")
+        report_path = os.path.join(self.reports_folder, f"rapport_complet_{timestamp}.txt")
         
         with open(report_path, 'w', encoding='utf-8') as f:
             f.write("=== RAPPORT D'ANALYSE COMPLET ===\n\n")
@@ -488,8 +513,18 @@ class QuantumCryptoAnalyzer:
             "wordcloud": wordcloud_path,
             "entities": entities,
             "trends": trends_path,
-            "insights": insights
+            "insights": insights,
+            "topics": [{'label': f'Cluster {i}', 'terms': terms} for i, terms in cluster_terms.items()] if hasattr(self, 'cluster_terms') else [],
+            "summary": insights
         }
+
+    def run_full_analysis(self):
+        """
+        Méthode d'adaptation qui appelle run_complete_analysis pour maintenir la compatibilité
+        avec le code existant dans main.py
+        """
+        print("Info: Redirection de run_full_analysis() vers run_complete_analysis()")
+        return self.run_complete_analysis()
 
 # Exemple d'utilisation
 if __name__ == "__main__":

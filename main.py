@@ -25,19 +25,20 @@ load_dotenv()
 
 # Import du logger personnalisé
 from src.utils.logger import get_logger
+from src.utils.file_manager import FileManager
 qv_logger = get_logger()
 logger = qv_logger.logger
 
 class QuantumCryptoVeille:
     def __init__(self):
         """Initialise le système de veille technologique"""
+        # Initialiser le gestionnaire de fichiers
+        self.file_manager = FileManager()
+        
+        # Utiliser les dossiers du gestionnaire de fichiers
         self.data_folder = "data"
         self.analysis_folder = "analysis_results"
         self.podcast_folder = "podcasts"
-        
-        # Créer les dossiers nécessaires
-        for folder in [self.data_folder, self.analysis_folder, self.podcast_folder]:
-            os.makedirs(folder, exist_ok=True)
         
         # Récupérer les tokens et API keys
         self.telegram_token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -52,7 +53,10 @@ class QuantumCryptoVeille:
         
         try:
             scraper = QuantumCryptoScraper()
-            csv_path, json_path = scraper.fetch_all_sources()
+            data = scraper.fetch_all_sources_data()
+            
+            # Utiliser le gestionnaire de fichiers pour sauvegarder les données
+            csv_path, json_path = self.file_manager.save_collected_data(data)
             
             # Collecter des statistiques sur les données collecteées
             stats = {}
@@ -89,9 +93,18 @@ class QuantumCryptoVeille:
             analyzer = QuantumCryptoAnalyzer(data_path)
             results = analyzer.run_full_analysis()
             
-            # Vérifier les résultats
-            if 'topics' in results and results['topics']:
-                logger.info(f"Thèmes identifiés: {len(results['topics'])}")
+            # Enregistrer les résultats d'analyse dans l'index
+            if results:
+                # Extraire l'ID des données à partir du chemin
+                data_id = os.path.basename(data_path).replace("quantum_crypto_data_", "").replace(".json", "")
+                
+                # Enregistrer les différents types d'analyse
+                if "daily_digest" in results:
+                    self.file_manager.register_analysis_result(data_id, "daily_digest", results["daily_digest_path"])
+                
+                if "topics" in results:
+                    self.file_manager.register_analysis_result(data_id, "topics", os.path.join(self.analysis_folder, "topics.csv"))
+                    logger.info(f"Thèmes identifiés: {len(results['topics'])}")
                 for i, topic in enumerate(results['topics']):
                     logger.info(f"Thème {i+1}: {topic.get('label', 'Non étiqueté')}")
             else:
@@ -116,8 +129,16 @@ class QuantumCryptoVeille:
         qv_logger.log_stage_start("Génération de podcast")
         
         # Vérifier que les fichiers nécessaires sont disponibles
-        summary_files = [f for f in os.listdir(self.analysis_folder) if f.startswith('recent_trends_summary')]
-        digest_files = [f for f in os.listdir(self.analysis_folder) if f.startswith('daily_digest')]
+        reports_folder = os.path.join(self.analysis_folder, "reports")
+        daily_folder = os.path.join(self.analysis_folder, "daily")
+        
+        # Vérifier que les dossiers existent
+        os.makedirs(reports_folder, exist_ok=True)
+        os.makedirs(daily_folder, exist_ok=True)
+        
+        # Rechercher les fichiers dans les dossiers appropriés
+        summary_files = [f for f in os.listdir(reports_folder) if f.startswith('recent_trends_summary')]
+        digest_files = [f for f in os.listdir(daily_folder) if f.startswith('daily_digest')]
         
         if not summary_files or not digest_files:
             logger.error("Fichiers d'analyse nécessaires non disponibles pour la génération du podcast")
@@ -138,6 +159,8 @@ class QuantumCryptoVeille:
             result = podcast_generator.generate_podcast()
             
             if result["status"] == "success":
+                # Enregistrer le podcast dans l'index
+                self.file_manager.register_podcast("weekly", result["script_path"], result["podcast_path"])
                 logger.info(f"Podcast généré avec succès: {result['podcast_path']}")
                 logger.info(f"Script: {result['script_path']}")
                 logger.info(f"URL: {result.get('podcast_url', 'Non disponible')}")
@@ -278,11 +301,10 @@ class QuantumCryptoVeille:
             self.collect_data()
         
         if "analyze" in tasks:
-            # Trouver le fichier de données le plus récent
-            data_files = [f for f in os.listdir(self.data_folder) if f.endswith('.json')]
-            if data_files:
-                latest_file = sorted(data_files)[-1]
-                self.analyze_data(os.path.join(self.data_folder, latest_file))
+            # Utiliser le gestionnaire de fichiers pour obtenir le fichier le plus récent
+            latest_file = self.file_manager.get_latest_data_file()
+            if latest_file:
+                self.analyze_data(latest_file)
             else:
                 logger.error("No data files found for analysis")
         

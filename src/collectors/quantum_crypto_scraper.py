@@ -280,8 +280,8 @@ class QuantumCryptoScraper:
         text_lower = text.lower()
         return any(term in text_lower for term in relevant_terms)
     
-    def fetch_all_sources(self):
-        """Récupère les données de toutes les sources et les sauvegarde"""
+    def fetch_all_sources_data(self):
+        """Récupère les données de toutes les sources sans les sauvegarder"""
         print("Starting data collection...")
         
         all_data = []
@@ -301,11 +301,8 @@ class QuantumCryptoScraper:
         all_data.extend(news_articles)
         print(f"Collected {len(news_articles)} articles from news sites")
         
-        # Sauvegarder les données collectées
-        df = pd.DataFrame(all_data)
-        
-        # Gérer les cas où le DataFrame est vide
-        if df.empty:
+        # Gérer les cas où aucune donnée n'est collectée
+        if not all_data:
             print("Aucune donnée collectée! Création d'un jeu de données minimal pour tests.")
             # Créer des données de test minimales
             test_data = [
@@ -327,8 +324,19 @@ class QuantumCryptoScraper:
                     "type": "research"
                 }
             ]
-            df = pd.DataFrame(test_data)
             all_data = test_data
+        
+        return all_data
+
+    def fetch_all_sources(self):
+        """Récupère les données de toutes les sources et les sauvegarde"""
+        print("Starting data collection...")
+        
+        # Utiliser la méthode fetch_all_sources_data pour collecter les données
+        all_data = self.fetch_all_sources_data()
+        
+        # Sauvegarder les données collectées
+        df = pd.DataFrame(all_data)
         
         # Créer le timestamp pour les noms de fichiers
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

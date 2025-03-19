@@ -59,25 +59,29 @@ class QuantumCryptoPodcast:
     def _get_latest_analysis(self):
         """Récupère les dernières analyses disponibles"""
         # Chercher le résumé le plus récent
-        summary_files = [f for f in os.listdir(self.analysis_folder) if f.startswith('recent_trends_summary')]
+        reports_folder = os.path.join(self.analysis_folder, "reports")
+        os.makedirs(reports_folder, exist_ok=True)
+        summary_files = [f for f in os.listdir(reports_folder) if f.startswith('recent_trends_summary')]
         
         if not summary_files:
             raise FileNotFoundError("No summary file found in analysis folder")
         
         latest_summary_file = sorted(summary_files)[-1]
         
-        with open(os.path.join(self.analysis_folder, latest_summary_file), 'r') as f:
+        with open(os.path.join(reports_folder, latest_summary_file), 'r') as f:
             summary = f.read()
         
         # Chercher le digest quotidien le plus récent
-        digest_files = [f for f in os.listdir(self.analysis_folder) if f.startswith('daily_digest')]
+        daily_folder = os.path.join(self.analysis_folder, "daily")
+        os.makedirs(daily_folder, exist_ok=True)
+        digest_files = [f for f in os.listdir(daily_folder) if f.startswith('daily_digest')]
         
         if not digest_files:
             raise FileNotFoundError("No digest file found in analysis folder")
         
         latest_digest_file = sorted(digest_files)[-1]
         
-        with open(os.path.join(self.analysis_folder, latest_digest_file), 'r') as f:
+        with open(os.path.join(daily_folder, latest_digest_file), 'r') as f:
             digest = json.load(f)
         
         return {

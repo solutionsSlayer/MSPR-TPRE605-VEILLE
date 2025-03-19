@@ -143,12 +143,13 @@ class QuantumVeilleLogger:
         
         # Vérifier les dossiers
         for folder in ["data", "analysis_results", "podcasts"]:
-            status = "✓" if os.path.isdir(folder) else "✗"
+            # Utiliser du texte ASCII plutôt que des symboles Unicode pour éviter les problèmes d'encodage
+            status = "OK" if os.path.isdir(folder) else "ABSENT"
             self.logger.info(f"  - Dossier {folder}: {status}")
         
         # Vérifier le fichier .env
         env_exists = os.path.isfile(".env")
-        status = "✓" if env_exists else "✗"
+        status = "OK" if env_exists else "ABSENT"
         self.logger.info(f"  - Fichier .env: {status}")
         
         # Vérifier les clés API sans les exposer
@@ -162,9 +163,9 @@ class QuantumVeilleLogger:
             telegram_bot = os_env.getenv("TELEGRAM_BOT_TOKEN", "")
             elevenlabs_api = os_env.getenv("ELEVENLABS_API_KEY", "")
             
-            openai_status = "✓" if openai_api and not openai_api.startswith("your_") else "✗"
-            telegram_status = "✓" if telegram_bot and not telegram_bot.startswith("your_") else "✗"
-            elevenlabs_status = "✓" if elevenlabs_api and not elevenlabs_api.startswith("your_") else "✗"
+            openai_status = "OK" if openai_api and not openai_api.startswith("your_") else "ABSENT"
+            telegram_status = "OK" if telegram_bot and not telegram_bot.startswith("your_") else "ABSENT"
+            elevenlabs_status = "OK" if elevenlabs_api and not elevenlabs_api.startswith("your_") else "ABSENT"
             
             self.logger.info(f"  - Clé API OpenAI: {openai_status}")
             self.logger.info(f"  - Token Bot Telegram: {telegram_status}")
@@ -173,7 +174,7 @@ class QuantumVeilleLogger:
         # Vérifier la présence de ffmpeg
         import shutil
         ffmpeg_path = shutil.which("ffmpeg")
-        ffmpeg_status = "✓" if ffmpeg_path else "✗"
+        ffmpeg_status = "OK" if ffmpeg_path else "ABSENT"
         self.logger.info(f"  - FFmpeg: {ffmpeg_status}")
         if ffmpeg_path:
             self.logger.info(f"    Chemin: {ffmpeg_path}")

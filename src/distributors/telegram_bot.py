@@ -179,7 +179,9 @@ class QuantumCryptoBot:
         """Gère la commande /summary - affiche le résumé des tendances récentes"""
         try:
             # Chercher le fichier de résumé le plus récent
-            summary_files = [f for f in os.listdir(ANALYSIS_FOLDER) if f.startswith('recent_trends_summary')]
+            reports_folder = os.path.join(ANALYSIS_FOLDER, "reports")
+            os.makedirs(reports_folder, exist_ok=True)
+            summary_files = [f for f in os.listdir(reports_folder) if f.startswith('recent_trends_summary')]
             
             if not summary_files:
                 await update.message.reply_text(
@@ -187,7 +189,7 @@ class QuantumCryptoBot:
                 )
                 return
             
-            latest_summary = os.path.join(ANALYSIS_FOLDER, sorted(summary_files)[-1])
+            latest_summary = os.path.join(reports_folder, sorted(summary_files)[-1])
             
             with open(latest_summary, 'r') as f:
                 summary_text = f.read()
@@ -216,7 +218,14 @@ class QuantumCryptoBot:
     async def topics_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Gère la commande /topics - affiche les principaux sujets de discussion"""
         try:
-            topics_file = os.path.join(ANALYSIS_FOLDER, "topics.csv")
+            # Chercher dans le dossier entities
+            entities_folder = os.path.join(ANALYSIS_FOLDER, "entities")
+            os.makedirs(entities_folder, exist_ok=True)
+            topics_file = os.path.join(entities_folder, "topics.csv")
+            
+            # Si le fichier n'existe pas dans entities, chercher à la racine
+            if not os.path.exists(topics_file):
+                topics_file = os.path.join(ANALYSIS_FOLDER, "topics.csv")
             
             if not os.path.exists(topics_file):
                 await update.message.reply_text(
@@ -243,7 +252,9 @@ class QuantumCryptoBot:
         """Gère la commande /sources - affiche les sources les plus actives"""
         try:
             # Trouver le digest quotidien le plus récent
-            digest_files = [f for f in os.listdir(ANALYSIS_FOLDER) if f.startswith('daily_digest')]
+            daily_folder = os.path.join(ANALYSIS_FOLDER, "daily")
+            os.makedirs(daily_folder, exist_ok=True)
+            digest_files = [f for f in os.listdir(daily_folder) if f.startswith('daily_digest')]
             
             if not digest_files:
                 await update.message.reply_text(
@@ -251,7 +262,7 @@ class QuantumCryptoBot:
                 )
                 return
             
-            latest_digest = os.path.join(ANALYSIS_FOLDER, sorted(digest_files)[-1])
+            latest_digest = os.path.join(daily_folder, sorted(digest_files)[-1])
             
             with open(latest_digest, 'r') as f:
                 digest = json.load(f)

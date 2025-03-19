@@ -24,11 +24,29 @@ var/
 # Données et résultats
 data/*.csv
 data/*.json
+data/current/*.csv
+data/current/*.json
+data/archives/*.csv
+data/archives/*.json
+
+# Résultats d'analyse
 analysis_results/*.json
 analysis_results/*.png
 analysis_results/*.txt
+analysis_results/*/*.json
+analysis_results/*/*.png
+analysis_results/*/*.txt
+analysis_results/*/visualizations
+analysis_results/clusters/
+analysis_results/visualizations/
+analysis_results/entities/
+analysis_results/reports/
+
+# Podcasts
 podcasts/*.mp3
 podcasts/*.txt
+podcasts/*/*.mp3
+podcasts/*/*.txt
 
 # Logs
 logs/
